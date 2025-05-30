@@ -64,19 +64,26 @@ def get_powiaty(data: Dict[str, Any]) -> List[int]:
 
 
 if __name__ == "__main__":
+    from sys import argv
     
-    with open("wybory_data.json", "r", encoding="utf-8") as f:
+    if len(argv) < 2:
+        print("Usage: python analyze.py <path_to_json_file>")
+        exit(1)
+    
+    file = argv[1]
+    
+    with open(file, "r", encoding="utf-8") as f:
         data: Dict[str, Any] = json.load(f)
-        
+    
     print("Election Results Analysis\n")
-        
+
     votes = get_votes(data)
     results = sorted(votes.items(), key=lambda x: x[1], reverse=True)
     total_votes = sum(votes.values())
     
     for id, num_votes in results:
         print(id, end=": ")
-        print(f"{total_votes:,} votes", end=" ")
+        print(f"{votes[id]:,} votes", end=" ")
         print(f"({num_votes / total_votes:.2%})")
     
     print(f"\nTotal votes: {total_votes:,}")

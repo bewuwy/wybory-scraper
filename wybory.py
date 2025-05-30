@@ -15,7 +15,7 @@ def process_powiat(powiat_id, woj_name):
     if not exists(raw_data_dir):
         makedirs(raw_data_dir)
     
-    filename_powiat = f"{raw_data_dir}/wybory_data_{woj_name}_{powiat_id}.json"
+    filename_powiat = f"{raw_data_dir}/wybory_data_{woj_name}_{powiat_id}"
     
     # try:
     data_powiat = scraper.get_protobuf_message(url=url_powiat, save_file=filename_powiat)
