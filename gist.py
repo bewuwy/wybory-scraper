@@ -10,16 +10,15 @@ load_dotenv()
 # Read configuration from environment variables
 GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
 GIST_ID = os.getenv('GIST_ID')
-FILENAME = os.getenv('FILENAME', 'elections.json')  # Default to 'data.json' if not set
 
 NUM_PEOPLE_ALLOWED_TO_VOTE = 29252340
 
-def upload(json_data):
+def upload(data, filename):
     # Prepare the update payload
     payload = {
         "files": {
-            FILENAME: {
-                "content": json_data
+            filename: {
+                "content": data
             }
         }
     }
@@ -35,7 +34,7 @@ def upload(json_data):
     if response.status_code == 200:
         print("Gist updated successfully.")
         print("Gist URL:", response.json()["html_url"])
-        print("Raw URL:", response.json()["files"][FILENAME]["raw_url"])
+        print("Raw URL:", response.json()["files"][filename]["raw_url"])
     else:
         print("Failed to update the Gist.")
         print(response.status_code, response.text)
@@ -85,3 +84,82 @@ def create_json_data(elections_data: dict, percentage_powiats: float) -> dict:
         "candidates": candidates,
         "stats": stats
     }
+
+
+voivedship_to_code = {
+    "wielkopolskie": "WP",
+    "kujawsko-pomorskie": "KP",
+    "małopolskie": "MA",
+    "łódzkie": "LD",
+    "dolnośląskie": "DS",
+    "lubuskie": "LB",
+    "lubelskie": "LU",
+    "mazowieckie": "MZ",
+    "opolskie": "OP",
+    "podlaskie": "PD",
+    "pomorskie": "PM",
+    "śląskie": "SL",
+    "podkarpackie": "PK",
+    "świętokrzyskie": "SK",
+    "warmińsko-mazurskie": "WN",
+    "zachodniopomorskie": "ZP",
+    "zagranica": "ZG",
+    "statki": "ST"
+}
+
+max_powiaty = {
+    "mazowieckie": 42,
+    "pomorskie": 20,
+    "wielkopolskie": 35,
+    "dolnośląskie": 30,
+    "małopolskie": 22,
+    "lubelskie": 24,
+    "łódzkie": 24,
+    "podlaskie": 17,
+    "zachodniopomorskie": 21,
+    "kujawsko-pomorskie": 23,
+    "śląskie": 36,
+    "podkarpackie": 25,
+    "warmińsko-mazurskie": 21,
+    "lubuskie": 14,
+    "opolskie": 12,
+    "świętokrzyskie": 14,
+    "zagranica": 1,
+    "statki": 1
+}
+
+def create_csv_data(voivodeships_data):
+    # Create CSV in this format:
+    # region	RT	KN	certainty	name
+    # WP	1	16	0.1	Wielkopolskie
+    # KP	2	15	0.2	Kujawsko-pomorskie
+    # MA	3	14	0.3	Małopolskie
+    # LD	4	13	0.4	Łódzkie
+    # DS	5	12	0.5	Dolnośląskie
+    # LB	6	11	0.6	Lubuskie
+    # LU	7	10	0.7	Lubelskie
+    # MZ	8	9	0.8	Mazowieckie
+    # OP	9	8	0.9	Opolskie
+    # PD	10	7	1	Podlaskie
+    # PM	11	6	0.25	Pomorskie
+    # SL	12	5	0.35	Śląskie
+    # PK	13	4	0.45	Podkarpackie
+    # SK	14	3	0.55	Świetokrzyskie
+    # WN	15	2	0.65	Warmińsko-mazurskie
+    # ZP	16	1	0.75	Zachodniopomorskie
+
+    csv_data = "region\tRT\tKN\tcertainty\tname\n"
+    # certainty is the percentage of precincts reporting in the region
+    
+    for region, data in voivodeships_data.items():
+        
+        if region not in voivedship_to_code:
+            continue
+        
+        rt_votes = data["Rafał Trzaskowski"]
+        kn_votes = data["Karol Nawrocki"]
+        certainty = data["powiaty_reporting"] / max_powiaty[region] if region in max_powiaty else 0
+
+        csv_data += f"{ voivedship_to_code[region] }\t{rt_votes}\t{kn_votes}\t{certainty}\t{region.capitalize()}\n"
+        
+    return csv_data.strip()

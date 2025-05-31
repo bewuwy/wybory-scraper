@@ -53,7 +53,7 @@ if __name__ == "__main__":
     from os import environ
     load_dotenv()
     save_partial_data = environ.get("SAVE_ELECTION_DATA", "total").lower() == "all" 
-    save_total_data = environ.get("SAVE_ELECTION_DATA", "total").lower() == "total"
+    save_total_data = environ.get("SAVE_ELECTION_DATA", "total").lower() == "total" or save_partial_data
     
     num_powiats = 0
     time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
@@ -67,20 +67,24 @@ if __name__ == "__main__":
         
         total_votes_woj[woj_name] = {
             "Rafał Trzaskowski": 0,
-            "Karol Nawrocki": 0
+            "Karol Nawrocki": 0,
+            "powiaty_reporting": 0
         }
         
         for powiat_id in powiat_ids:
             process_powiat(powiat_id, woj_name, save_partial_data)
             num_powiats += 1
+            total_votes_woj[woj_name]["powiaty_reporting"] += 1
     
     for woj_name, powiat_id in scraper.SPECIAL_POWIATY:
         total_votes_woj[woj_name] = {
             "Rafał Trzaskowski": 0,
-            "Karol Nawrocki": 0
+            "Karol Nawrocki": 0,
+            "powiaty_reporting": 0
         }
         process_powiat(powiat_id, woj_name, save_partial_data)
         num_powiats += 1
+        total_votes_woj[woj_name]["powiaty_reporting"] += 1
 
     print(f"\nProcessed {num_powiats} (out of 382) powiatów successfully.")
     
@@ -91,6 +95,8 @@ if __name__ == "__main__":
     }
     for woj_name, votes in total_votes_woj.items():
         for candidate, num_votes in votes.items():
+            if candidate not in total_votes:
+                continue
             total_votes[candidate] += num_votes
     
     print("\n\nTotal Votes:")
@@ -115,6 +121,9 @@ if __name__ == "__main__":
             json.dump(total_votes, f, ensure_ascii=False, indent=4)
         
     # upload to gist
-    from gist import upload, create_json_data
+    from gist import upload, create_json_data, create_csv_data
     gist_data = create_json_data(total_votes, num_powiats/382 * 100)
-    upload(json.dumps(gist_data, ensure_ascii=False, indent=4))
+    upload(json.dumps(gist_data, ensure_ascii=False, indent=4), "elections.json")
+    
+    csv_data = create_csv_data(total_votes_woj)
+    upload(csv_data, "elections.csv")
