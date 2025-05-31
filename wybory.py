@@ -6,16 +6,20 @@ import json
 from datetime import datetime
 
 
-def process_powiat(powiat_id, woj_name):
+def process_powiat(powiat_id, woj_name, save=False):
     url_powiat = scraper.get_powiat_results_url(powiat_id)
+    
     raw_data_dir = f"data/{time}/raw/{woj_name}"
     votes_data_dir = f"data/{time}/votes/{woj_name}"
-    if not exists(votes_data_dir):
-        makedirs(votes_data_dir)
-    if not exists(raw_data_dir):
-        makedirs(raw_data_dir)
+    filename_powiat = None
     
-    filename_powiat = f"{raw_data_dir}/wybory_data_{woj_name}_{powiat_id}"
+    if save:
+        if not exists(votes_data_dir):
+            makedirs(votes_data_dir)
+        if not exists(raw_data_dir):
+            makedirs(raw_data_dir)
+    
+        filename_powiat = f"{raw_data_dir}/wybory_data_{woj_name}_{powiat_id}"
     
     # try:
     data_powiat = scraper.get_protobuf_message(url=url_powiat, save_file=filename_powiat)
@@ -28,10 +32,11 @@ def process_powiat(powiat_id, woj_name):
             print(f"{candidate}: {num_votes:,} votes")
     print()
     
-    #  Save the votes data to a file
-    votes_filename = f"{votes_data_dir}/votes_{woj_name}_{powiat_id}.json"
-    with open(votes_filename, "w", encoding="utf-8") as f:
-        json.dump(votes, f, ensure_ascii=False, indent=4)
+    if save:
+        #  Save the votes data to a file
+        votes_filename = f"{votes_data_dir}/votes_{woj_name}_{powiat_id}.json"
+        with open(votes_filename, "w", encoding="utf-8") as f:
+            json.dump(votes, f, ensure_ascii=False, indent=4)
         
     # except scraper.NotFoundError as e:
     #     print(f"NotFoundError (powiat {powiat_id} in {woj_name}): {e}")
@@ -43,6 +48,13 @@ def process_powiat(powiat_id, woj_name):
 
 
 if __name__ == "__main__":
+    
+    from dotenv import load_dotenv
+    from os import environ
+    load_dotenv()
+    save_partial_data = environ.get("SAVE_ELECTION_DATA", "total").lower() == "all" 
+    save_total_data = environ.get("SAVE_ELECTION_DATA", "total").lower() == "total"
+    
     num_powiats = 0
     time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
     
@@ -59,15 +71,15 @@ if __name__ == "__main__":
         }
         
         for powiat_id in powiat_ids:
-            process_powiat(powiat_id, woj_name)
-            num_powiats += 1
+            process_powiat(powiat_id, woj_name, save_partial_data)
+            num_powiats += 1        
     
     for woj_name, powiat_id in scraper.SPECIAL_POWIATY:
         total_votes_woj[woj_name] = {
             "Rafał Trzaskowski": 0,
             "Karol Nawrocki": 0
         }
-        process_powiat(powiat_id, woj_name)
+        process_powiat(powiat_id, woj_name, save_partial_data)
         num_powiats += 1
 
     print(f"\nProcessed {num_powiats} (out of 382) powiatów successfully.")
@@ -87,12 +99,7 @@ if __name__ == "__main__":
         print(f"({num_votes / sum(total_votes.values()):.2%})")
         print()
 
-    from dotenv import load_dotenv
-    from os import environ
-    load_dotenv()
-    save = environ.get("SAVE_DATA", "false").lower() == "true" 
-
-    if save:
+    if save_total_data:
         # save total votes to a file
         total_votes_filename = f"data/{time}/total/votes.json"
         if not exists(f"data/{time}/total"):

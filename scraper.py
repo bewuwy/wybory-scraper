@@ -104,9 +104,10 @@ def get_protobuf_message(url=RESULTS_URL, save_file="wybory_data") -> Dict:
         
         raise Exception(f"Failed to fetch data from {url}")
 
-    # save the raw content to a file
-    with open(f"{save_file}.blob", "wb") as f:
-        f.write(r.content)
+    if save_file is not None:
+        # save the raw content to a file
+        with open(f"{save_file}.blob", "wb") as f:
+            f.write(r.content)
 
     # decode the Protobuf message
     message, typedef = blackboxprotobuf.decode_message(r.content)
@@ -114,8 +115,9 @@ def get_protobuf_message(url=RESULTS_URL, save_file="wybory_data") -> Dict:
     # recursively convert all bytes in the message to strings
     decoded_message = decode_bytes_recursively(message)
 
-    # save the decoded message to a file
-    with open(f"{save_file}.json", "w") as f:
-        json.dump(decoded_message, f, indent=2, ensure_ascii=False)
+    if save_file is not None:
+        # save the decoded message to a file
+        with open(f"{save_file}.json", "w") as f:
+            json.dump(decoded_message, f, indent=2, ensure_ascii=False)
     
     return decoded_message
