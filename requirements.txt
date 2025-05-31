@@ -1,0 +1,3 @@
+requests
+blackboxprotobuf
+python-dotenv
