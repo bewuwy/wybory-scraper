@@ -72,7 +72,7 @@ if __name__ == "__main__":
         
         for powiat_id in powiat_ids:
             process_powiat(powiat_id, woj_name, save_partial_data)
-            num_powiats += 1        
+            num_powiats += 1
     
     for woj_name, powiat_id in scraper.SPECIAL_POWIATY:
         total_votes_woj[woj_name] = {

@@ -12,6 +12,7 @@ GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
 GIST_ID = os.getenv('GIST_ID')
 FILENAME = os.getenv('FILENAME', 'elections.json')  # Default to 'data.json' if not set
 
+NUM_PEOPLE_ALLOWED_TO_VOTE = 29252340
 
 def upload(json_data):
     # Prepare the update payload
@@ -75,7 +76,7 @@ def create_json_data(elections_data: dict, percentage_powiats: float) -> dict:
         total_votes += votes
     stats = {
         "total_votes": total_votes,
-        "turnout": 0,
+        "turnout":  round((total_votes / NUM_PEOPLE_ALLOWED_TO_VOTE) * 100, 2),
         "precincts_reporting": round(percentage_powiats, 1),
         "time": datetime.today().strftime('%d.%m %H:%M')  # Current time
     }
