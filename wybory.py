@@ -103,5 +103,5 @@ if __name__ == "__main__":
         
     # upload to gist
     from gist import upload, create_json_data
-    gist_data = create_json_data(total_votes)
+    gist_data = create_json_data(total_votes, num_powiats/382 * 100)
     upload(json.dumps(gist_data, ensure_ascii=False, indent=4))

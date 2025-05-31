@@ -40,7 +40,7 @@ def upload(json_data):
         print(response.status_code, response.text)
 
 
-def create_json_data(elections_data: dict) -> dict:
+def create_json_data(elections_data: dict, percentage_powiats: float) -> dict:
     # reformat the data to match this structure:
     
     # {
@@ -76,8 +76,8 @@ def create_json_data(elections_data: dict) -> dict:
     stats = {
         "total_votes": total_votes,
         "turnout": 0,
-        "precincts_reporting": 0,
-        "time": datetime.today().strftime('%Y-%m-%d %H:%M')  # Current time
+        "precincts_reporting": percentage_powiats,
+        "time": datetime.today().strftime('%d.%m %H:%M')  # Current time
     }
     
     return {
