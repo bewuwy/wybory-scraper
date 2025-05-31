@@ -101,3 +101,7 @@ if __name__ == "__main__":
     with open(total_votes_filename, "w", encoding="utf-8") as f:
         json.dump(total_votes, f, ensure_ascii=False, indent=4)
         
+    # upload to gist
+    from gist import upload, create_json_data
+    gist_data = create_json_data(total_votes)
+    upload(json.dumps(gist_data, ensure_ascii=False, indent=4))
