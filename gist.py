@@ -76,7 +76,7 @@ def create_json_data(elections_data: dict, percentage_powiats: float) -> dict:
     stats = {
         "total_votes": total_votes,
         "turnout": 0,
-        "precincts_reporting": percentage_powiats,
+        "precincts_reporting": round(percentage_powiats, 1),
         "time": datetime.today().strftime('%d.%m %H:%M')  # Current time
     }
     

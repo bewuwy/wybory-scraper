@@ -87,19 +87,25 @@ if __name__ == "__main__":
         print(f"({num_votes / sum(total_votes.values()):.2%})")
         print()
 
-    # save total votes to a file
-    total_votes_filename = f"data/{time}/total/votes.json"
-    if not exists(f"data/{time}/total"):
-        makedirs(f"data/{time}/total")
+    from dotenv import load_dotenv
+    from os import environ
+    load_dotenv()
+    save = environ.get("SAVE_DATA", "false").lower() == "true" 
+
+    if save:
+        # save total votes to a file
+        total_votes_filename = f"data/{time}/total/votes.json"
+        if not exists(f"data/{time}/total"):
+            makedirs(f"data/{time}/total")
+            
+        # Save total votes by województwo
+        total_votes_woj_filename = f"data/{time}/total/votes_by_woj.json"
+        with open(total_votes_woj_filename, "w", encoding="utf-8") as f:
+            json.dump(total_votes_woj, f, ensure_ascii=False, indent=4)
         
-    # Save total votes by województwo
-    total_votes_woj_filename = f"data/{time}/total/votes_by_woj.json"
-    with open(total_votes_woj_filename, "w", encoding="utf-8") as f:
-        json.dump(total_votes_woj, f, ensure_ascii=False, indent=4)
-    
-    # Save total votes
-    with open(total_votes_filename, "w", encoding="utf-8") as f:
-        json.dump(total_votes, f, ensure_ascii=False, indent=4)
+        # Save total votes
+        with open(total_votes_filename, "w", encoding="utf-8") as f:
+            json.dump(total_votes, f, ensure_ascii=False, indent=4)
         
     # upload to gist
     from gist import upload, create_json_data
